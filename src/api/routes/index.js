@@ -11,9 +11,9 @@ const express = require('express');
             service: "RepoPulse"
         });
     });
+    
+    const repoController = require('../controllers/repo.controller');
 
-    router.get('/repos/analyze', (req, res) => {
-        
-    })
+    router.post('/repos/analyze', repoController)
 
     module.exports = router;
