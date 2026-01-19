@@ -2,7 +2,7 @@ const registerRepositoryForAnalysis = async (repodata) => {
     try{
         return {
             success: true,
-            data: repoData,
+            data: repodata,
         };
     } catch(error){
         console.log("Service error", error);
