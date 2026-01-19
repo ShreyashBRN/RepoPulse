@@ -14,6 +14,6 @@ const express = require('express');
     
     const repoController = require('../controllers/repo.controller');
 
-    router.post('/repos/analyze', repoController)
+    router.post('/repos/analyze', repoController.analyzeRepository)
 
     module.exports = router;
