@@ -53,6 +53,7 @@ function validateAndNormalizeRepo(input) {
       owner,
       repo,
       fullName: `${owner}/${repo}`,
+      url: `https://github.com/${owner}/${repo}`,
     };
   }
   module.exports = {
