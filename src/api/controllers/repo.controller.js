@@ -4,10 +4,10 @@ const { validateAndNormalizeRepo } = require('../validators/repo.validator');
 const analyzeRepository = async (req, res) => {
     try{
     const normalizedRepo = validateAndNormalizeRepo(req.body);
-    await registerRepositoryForAnalysis(normalizedRepo);
+    const repository = await registerRepositoryForAnalysis(normalizedRepo);
     return res.status(202).json({
-        message: "Repository analysis queued",
-        status: "pending",
+      repositoryId: repository._id,
+      status: repository.status,
     });
     } catch(error){
         if (error.message && error.message.toLowerCase().includes("repo")) {
@@ -16,11 +16,6 @@ const analyzeRepository = async (req, res) => {
               status: "bad_request",
             });
           }
-        console.error("Failed to register repository for analysis:", error);
-        return res.status(500).json({
-            message: "Failed to queue repository analysis",
-            status: "error",
-          });
     }
 };
 
