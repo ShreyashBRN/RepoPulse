@@ -1,4 +1,5 @@
 const Repository = require('../../models/repository.model');
+const { enqueRepoAAnalysisJob } = require('../../jobs/queues/repo.queue');
 
 const registerRepositoryForAnalysis = async (repodata) => {
     const { owner, repo, fullName, url } = repodata;
@@ -16,6 +17,11 @@ const registerRepositoryForAnalysis = async (repodata) => {
     });
 
     await repository.save();
+    
+    await enqueRepoAAnalysisJob({
+        repositoryId: repository._id.toString(),
+        fullName: repository.fullName,
+    })
 
     return repository;
 };
