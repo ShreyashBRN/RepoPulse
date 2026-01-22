@@ -2,7 +2,7 @@ const { Worker } = require("bullmq");
 const IORedis = require("ioredis");
 const mongoose = require('mongoose');
 const Repository = require('../../models/repository.model');
-const { fetchRepoMetadata, fetchCommitsLast30Days } = require('../../services/github/github.service');
+const { fetchRepoMetadata, fetchCommitsLast30Days, fetchIssueStats, fetchContributorCount } = require('../../services/github/github.service');
 const { MONGO_URI } = require('../../config/env');
 
 mongoose.connect(MONGO_URI);
@@ -26,6 +26,14 @@ const connection = new IORedis({
         const metadata = await fetchRepoMetadata(owner, repo);
         const commitCountLast30Days = await fetchCommitsLast30Days(owner, repo);
         console.log("🧮 Commits in last 30 days:", commitCountLast30Days);
+        const issueStats = await fetchIssueStats(owner, repo);
+        console.log("🐞 Issue stats:", issueStats);
+        console.log({
+          openIssues: issueStats.closeIssues,
+          closedIssues: issueStats.closeIssues,
+        });
+        
+        
         console.log("📦 GitHub Repo Metadata:");
         console.log({
           name: metadata.full_name,

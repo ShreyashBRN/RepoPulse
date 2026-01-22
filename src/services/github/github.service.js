@@ -73,6 +73,74 @@ async function fetchCommitsLast30Days(owner, repo){
     return commitCount;
 }
 
+async function fetchIssueStats(owner, repo){
+    const perPage = 100;
+
+    async function fetchIssuesByState(state){
+        let page = 1;
+        let count = 0;
+        while(true){
+            const response = await axios.get(`https://api.github.com/repos/${owner}/${repo}/commits`, {
+                params: {
+                    state,
+                    per_page: perPage,
+                    page,
+                  },
+                  headers: {
+                    Authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
+                    Accept: "application/vnd.github+json",
+                  }
+            }
+        );
+        const issues = response.data;
+
+        const realIssue = issues.filter(
+            (issue) => !issue.pull_request
+        );
+        count += realIssue.length;
+        if (issues.length < perPage) {
+            break;
+          }
+          page++;
+        }
+        return count;
+    }
+    const openIssues = await fetchIssuesByState("open");
+    const closeIssues = await fetchIssuesByState("closed");
+    return {
+        openIssues, closeIssues,
+    };
+    
+}
+
+async function fetchContributorCount(owner, repo){
+    const perPage = 100;
+    let page = 1;
+    let contributorCount = 0;
+
+    while(true){
+        const response = await axios.get(`https://api.github.com/repos/${owner}/${repo}/contributors`, {
+            params: {
+                per_page: perPage,
+                page,
+              },
+              headers: {
+                Authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
+                Accept: "application/vnd.github+json",
+              },
+        });
+        const contributors = response.data;
+        contributorCount += contributors.length;
+        if (contributors.length < perPage) {
+            break;
+          }
+          page++;
+
+    }
+    return contributorCount;
+}
+
 module.exports = { registerRepositoryForAnalysis,
     fetchRepoMetadata, fetchCommitsLast30Days,
+    fetchIssueStats, fetchContributorCount,
  };
