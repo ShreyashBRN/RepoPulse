@@ -1,5 +1,5 @@
 const Repository = require('../../models/repository.model');
-const { enqueRepoAAnalysisJob } = require('../../jobs/queues/repo.queue');
+const { enqueueRepoAnalysisJob } = require('../../jobs/queues/repo.queue');
 const axios = require('axios');
 
 const registerRepositoryForAnalysis = async (repodata) => {
@@ -19,7 +19,7 @@ const registerRepositoryForAnalysis = async (repodata) => {
 
     await repository.save();
     
-    await enqueRepoAAnalysisJob({
+    await enqueueRepoAnalysisJob({
         repositoryId: repository._id.toString(),
         fullName: repository.fullName,
     })
@@ -27,7 +27,7 @@ const registerRepositoryForAnalysis = async (repodata) => {
     return repository;
 };
 
-async function fetchRepoMetadata(repo, data){
+async function fetchRepoMetadata(owner, repo){
     const url = `https://api.github.com/repos/${owner}/${repo}`;
     const response = await axios.get(url, {
         headers: {
@@ -39,6 +39,40 @@ async function fetchRepoMetadata(repo, data){
 
 }
 
+async function fetchCommitsLast30Days(owner, repo){
+    const perPage = 100;
+    let page = 1;
+    let commitCount = 0;
+    const sinceDate = new Date();
+    sinceDate.setDate(sinceDate.getDate() - '30');
+    const sinceISO = sinceDate.toISOString();
+
+    while(true){
+        const response = await axios.get(
+            `https://api.github.com/repos/${owner}/${repo}/commits`, {
+            params: {
+                since: sinceISO,
+                per_page: perPage,
+                page,
+              },
+              headers: {
+                Authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
+                Accept: "application/vnd.github+json",
+              },
+            }
+            
+        );
+        const commits = response.data;
+
+        commitCount += commits.length;
+        if(commits.length < perPage){
+            break;
+        }
+        page++;
+    }
+    return commitCount;
+}
+
 module.exports = { registerRepositoryForAnalysis,
-    fetchRepoMetadata,
+    fetchRepoMetadata, fetchCommitsLast30Days,
  };

@@ -1,23 +1,19 @@
-const { Queue } = require('bullmq');
-const IORedis = require('ioredis');
+const { Queue } = require("bullmq");
+const IORedis = require("ioredis");
 
 const connection = new IORedis({
-    host: "127.0.0.1",
-    port: 6379,
-  });
+  host: "127.0.0.1",
+  port: 6379,
+  maxRetriesPerRequest: null,
+});
 
-  const repoQueue = new IORedis({
-    host: "127.0.0.1",
-    port: 6379,
-  });
+// ✅ THIS is the important line
+const repoQueue = new Queue("repo-analysis", {
+  connection,
+});
 
-
-
-async function enqueRepoAAnalysisJob(payload){
-    await repoQueue.add(
-        "analyze-Repo",
-        payload
-    );
+async function enqueueRepoAnalysisJob(payload) {
+  await repoQueue.add("analyze-repo", payload);
 }
 
-module.exports = { enqueRepoAAnalysisJob };
+module.exports = { enqueueRepoAnalysisJob };
