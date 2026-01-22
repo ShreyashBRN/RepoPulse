@@ -4,6 +4,7 @@ const mongoose = require('mongoose');
 const Repository = require('../../models/repository.model');
 const { fetchRepoMetadata, fetchCommitsLast30Days, fetchIssueStats, fetchContributorCount } = require('../../services/github/github.service');
 const { MONGO_URI } = require('../../config/env');
+const { computeHealthScore } = require('../../services/metrics/healthScore.service');
 
 mongoose.connect(MONGO_URI);
 
@@ -29,9 +30,21 @@ const connection = new IORedis({
         const issueStats = await fetchIssueStats(owner, repo);
         console.log("🐞 Issue stats:", issueStats);
         console.log({
-          openIssues: issueStats.closeIssues,
+          openIssues: issueStats.openIssues,
           closedIssues: issueStats.closeIssues,
         });
+
+        const contributorCount = await fetchContributorCount(owner, repo);
+        console.log("👥 Contributors:", contributorCount);
+        const healthScore = computeHealthScore({
+          commitCount: commitCountLast30Days,
+          openIssues: issueStats.openIssues,
+          closedIssues: issueStats.closeIssues,
+          contributorCount,
+        });
+
+        console.log("❤️ Health Score:", healthScore);
+
         
         
         console.log("📦 GitHub Repo Metadata:");
@@ -44,6 +57,11 @@ const connection = new IORedis({
         
         await Repository.findByIdAndUpdate(repositoryId, {
           status: "completed",
+          commitCountLast30Days,
+          openIssues: issueStats.openIssues,
+          closedIssues: issueStats.closedIssues,
+          contributorCount,
+          healthScore,
         });
         console.log("✅ Completed repo:", fullName);
       } catch (error){
