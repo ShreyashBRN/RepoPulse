@@ -1,5 +1,6 @@
 const { registerRepositoryForAnalysis } = require('../../services/github/github.service');
 const { validateAndNormalizeRepo } = require('../validators/repo.validator');
+const { getRepositoryById, getRepositoryMetrics: getRepositoryMetricsById, } = require('../../services/repository.service');
 
 const analyzeRepository = async (req, res) => {
     try{
@@ -19,6 +20,53 @@ const analyzeRepository = async (req, res) => {
     }
 };
 
+const getRepository = async (req, res) => {
+  try{
+    const { id } = req.params;
+    const repo = await getRepositoryById(id);
+    if(!repo){
+      return res.status(404).json({ message: "Repository not found" });
+    }
+    return res.json({
+      id: repo._id,
+      fullName: repo.fullName,
+      url: repo.url,
+      status: repo.status,
+      createdAt: repo.createdAt,
+      updatedAt: repo.updatedAt,
+    });
+
+  } catch(err){
+    return res.status(500).json({ message: "Failed to fetch repository" });
+  }
+}
+
+const getRepositoryMetrics = async (req, res) => {
+  try{
+    const { id } = req.params;
+    const repo = await getRepositoryMetricsById(id);
+    if(!repo){
+      return res.status(404).json({ message: "Repository not found" });
+    }
+    if(repo.status !== "completed"){
+      return res.status(409).json({
+        message: "Repository analysis not completed yet",
+        status: repo.status,
+      });
+    }
+    return res.json({
+      commitCount: repo.commitCountLast30Days,
+      openIssues: repo.openIssues,
+      closedIssues: repo.closedIssues,
+      contributorCount: repo.contributorCount,
+      healthScore: repo.healthScore,
+    });
+  } catch(err){
+    return res.status(500).json({ message: "Failed to fetch metrics" });
+
+  }
+}
+
 module.exports = {
-    analyzeRepository,
+    analyzeRepository, getRepository, getRepositoryMetrics,
 };

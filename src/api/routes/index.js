@@ -14,6 +14,9 @@ const express = require('express');
     
     const repoController = require('../controllers/repo.controller');
 
-    router.post('/repos/analyze', repoController.analyzeRepository)
+    router.post('/repos/analyze', repoController.analyzeRepository);
+    router.get('/repos/:id', repoController.getRepository);
+    router.get('/repos/:id/metrics', repoController.getRepositoryMetrics);
+
 
     module.exports = router;

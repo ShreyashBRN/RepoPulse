@@ -13,7 +13,13 @@ const repoQueue = new Queue("repo-analysis", {
 });
 
 async function enqueueRepoAnalysisJob(payload) {
-  await repoQueue.add("analyze-repo", payload);
+  await repoQueue.add("analyze-repo", payload, {
+    attempts: 5,
+    backoff: {
+      type: "exponential",
+      delay: 5000,
+    },
+  });
 }
 
 module.exports = { enqueueRepoAnalysisJob };

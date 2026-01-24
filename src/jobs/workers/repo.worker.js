@@ -5,6 +5,7 @@ const Repository = require('../../models/repository.model');
 const { fetchRepoMetadata, fetchCommitsLast30Days, fetchIssueStats, fetchContributorCount } = require('../../services/github/github.service');
 const { MONGO_URI } = require('../../config/env');
 const { computeHealthScore } = require('../../services/metrics/healthScore.service');
+const { invalidateRepoMetricsCache } = require('../../services/repository.service');
 
 mongoose.connect(MONGO_URI);
 
@@ -63,6 +64,7 @@ const connection = new IORedis({
           contributorCount,
           healthScore,
         });
+        await invalidateRepoMetricsCache(repositoryId);
         console.log("✅ Completed repo:", fullName);
       } catch (error){
         console.error("❌ Worker error:", error.message);
