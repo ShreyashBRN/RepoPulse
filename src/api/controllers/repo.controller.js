@@ -1,6 +1,7 @@
+const mongoose = require('mongoose');
 const { registerRepositoryForAnalysis } = require('../../services/github/github.service');
 const { validateAndNormalizeRepo } = require('../validators/repo.validator');
-const { getRepositoryById, getRepositoryMetrics: getRepositoryMetricsById, } = require('../../services/repository.service');
+const { getRepositoryById, getRepositoryMetrics: fetchRepositoryMetrics } = require('../../services/repository.service');
 
 const analyzeRepository = async (req, res) => {
     try{
@@ -23,6 +24,11 @@ const analyzeRepository = async (req, res) => {
 const getRepository = async (req, res) => {
   try{
     const { id } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+      message: "Invalid repository id",
+      });
+      }
     const repo = await getRepositoryById(id);
     if(!repo){
       return res.status(404).json({ message: "Repository not found" });
@@ -44,7 +50,12 @@ const getRepository = async (req, res) => {
 const getRepositoryMetrics = async (req, res) => {
   try{
     const { id } = req.params;
-    const repo = await getRepositoryMetricsById(id);
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+      message: "Invalid repository id",
+      });
+      }
+    const repo = await fetchRepositoryMetrics(id);
     if(!repo){
       return res.status(404).json({ message: "Repository not found" });
     }

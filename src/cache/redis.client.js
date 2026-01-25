@@ -6,4 +6,6 @@ const redis = new IORedis({
   maxRetriesPerRequest: null,
 });
 
+redis.on("error", (err) => console.warn("[Redis]", err.message));
+
 module.exports = redis;
