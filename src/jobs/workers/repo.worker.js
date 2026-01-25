@@ -1,8 +1,9 @@
+require("dotenv").config();
 const { Worker } = require("bullmq");
 const IORedis = require("ioredis");
 const mongoose = require('mongoose');
 const Repository = require('../../models/repository.model');
-const { fetchRepoMetadata, fetchCommitsLast30Days, fetchIssueStats, fetchContributorCount } = require('../../services/github/github.service');
+const { fetchCommitsLast30Days, fetchIssueStats, fetchContributorCount } = require('../../services/github/github.service');
 const { MONGO_URI } = require('../../config/env');
 const { computeHealthScore } = require('../../services/metrics/healthScore.service');
 const { invalidateRepoMetricsCache } = require('../../services/repository.service');
@@ -25,37 +26,21 @@ const connection = new IORedis({
         await Repository.findByIdAndUpdate(repositoryId, {
           status: "processing",
         });
-        const metadata = await fetchRepoMetadata(owner, repo);
         const commitCountLast30Days = await fetchCommitsLast30Days(owner, repo);
         console.log("🧮 Commits in last 30 days:", commitCountLast30Days);
         const issueStats = await fetchIssueStats(owner, repo);
-        console.log("🐞 Issue stats:", issueStats);
-        console.log({
-          openIssues: issueStats.openIssues,
-          closedIssues: issueStats.closeIssues,
-        });
+        console.log("🐞 Issue stats:", { openIssues: issueStats.openIssues, closedIssues: issueStats.closedIssues });
 
         const contributorCount = await fetchContributorCount(owner, repo);
         console.log("👥 Contributors:", contributorCount);
         const healthScore = computeHealthScore({
-          commitCount: commitCountLast30Days,
-          openIssues: issueStats.openIssues,
-          closedIssues: issueStats.closeIssues,
-          contributorCount,
+            commitCount: commitCountLast30Days,
+            openIssues: issueStats.openIssues,
+            closedIssues: issueStats.closedIssues,
+            contributorCount,
         });
-
         console.log("❤️ Health Score:", healthScore);
 
-        
-        
-        console.log("📦 GitHub Repo Metadata:");
-        console.log({
-          name: metadata.full_name,
-          description: metadata.description,
-          forks: metadata.forks_count,
-          openIssues: metadata.open_issues_count,
-        });
-        
         await Repository.findByIdAndUpdate(repositoryId, {
           status: "completed",
           commitCountLast30Days,

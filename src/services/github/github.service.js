@@ -44,7 +44,7 @@ async function fetchCommitsLast30Days(owner, repo){
     let page = 1;
     let commitCount = 0;
     const sinceDate = new Date();
-    sinceDate.setDate(sinceDate.getDate() - '30');
+    sinceDate.setDate(sinceDate.getDate() - 30);
     const sinceISO = sinceDate.toISOString();
 
     while(true){
@@ -80,7 +80,7 @@ async function fetchIssueStats(owner, repo){
         let page = 1;
         let count = 0;
         while(true){
-            const response = await axios.get(`https://api.github.com/repos/${owner}/${repo}/commits`, {
+            const response = await axios.get(`https://api.github.com/repos/${owner}/${repo}/issues`, {
                 params: {
                     state,
                     per_page: perPage,
@@ -106,9 +106,9 @@ async function fetchIssueStats(owner, repo){
         return count;
     }
     const openIssues = await fetchIssuesByState("open");
-    const closeIssues = await fetchIssuesByState("closed");
+    const closedIssues = await fetchIssuesByState("closed");
     return {
-        openIssues, closeIssues,
+        openIssues, closedIssues,
     };
     
 }

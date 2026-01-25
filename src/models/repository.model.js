@@ -27,6 +27,12 @@ const repositorySchema = new mongoose.Schema({
         enum: ["pending", "processing", "completed", "failed"],
         default: "pending",
       },
+
+    commitCountLast30Days: { type: Number },
+    openIssues: { type: Number },
+    closedIssues: { type: Number },
+    contributorCount: { type: Number },
+    healthScore: { type: Number },
 },
 {
     timestamps: true,

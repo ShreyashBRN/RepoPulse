@@ -13,6 +13,7 @@ const repoQueue = new Queue("repo-analysis", {
 });
 
 async function enqueueRepoAnalysisJob(payload) {
+  console.log("📤 Enqueuing job:", payload);
   await repoQueue.add("analyze-repo", payload, {
     attempts: 5,
     backoff: {
