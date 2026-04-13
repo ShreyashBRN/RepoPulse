@@ -56,7 +56,12 @@ const Index = () => {
     setData(null);
 
     try {
-      const resp = await fetch("/api/v1/analyze", {
+      // const resp = await fetch("/api/v1/analyze", {
+      //   method: "POST",
+      //   headers: { "Content-Type": "application/json" },
+      //   body: JSON.stringify({ repoUrl: url }),
+      // });
+      const resp = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/analyze`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ repoUrl: url }),
